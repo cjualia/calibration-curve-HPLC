@@ -10,10 +10,8 @@ data_sens <- read.csv2("data/raw/data_sensibilidad.csv")
 
 # 2. Coarcing variables
 data_lin$sample <- as.factor(data_lin$sample)
-data_lin$sample <- as.factor(data_lin$cc)
 
 data_sens$sample <- as.factor(data_sens$sample)
-data_sens$sample <- as.factor(data_sens$cc)
 
 # 3. Saving as.Rda object
 save(data_lin, data_sens, file = "data/processed/data")
@@ -39,24 +37,28 @@ reps_summ <- function(df){
 ### Results are saved in a list. Each element of the list corresponds to one of
 ### the datasets
 results <- lapply(list("linealidad" = data_lin,
-                 "sensibililidad" = data_sens), 
+                 "sensibilidad" = data_sens), 
             reps_summ)
 
 ### Saving results in /data/processed
 save(results, file="data/processed/mean_sd")
 
 ## 4.b. Plot 
-install.packages("ggplot2")
+#install.packages("ggplot2")
 library("ggplot2")
 
 p_cc.vs.area <- ggplot(data = results$linealidad, 
                        aes(x= cc, 
                            y = mean.area)) +
-                geom_point(size = 2, colour = "blue") +
+                geom_point(size = 3, colour = "blue") +
                 theme_light() + 
                 labs(title= "Concentración vs Area",
                      x = "Concentración (mg/mL)",
-                     y = "UA")
+                     y = "UA") +
+                geom_errorbar(aes(ymin=mean.area-sd.area, 
+                                  ymax=mean.area+sd.area), 
+                              width = 0.003,
+                              colour = "red")
 
 ## 4.c. Linear Regression 
 ### Fitting a regression line:
@@ -84,4 +86,55 @@ summary(mod2)
 ### ANOVA linear model vs cuadratic model
 anova(mod,mod2) # pval> 0.05 so mod2 is not better fit
 
+# 5. Sensivity Analysis
+# Linear model
+mod_sens <- lm(mean.area ~ cc, data = results$sensibilidad)
+summary(mod_sens)
 
+p_sens_cc.vs.area <- ggplot(data = results$sensibilidad, 
+                       aes(x= cc, 
+                           y = mean.area)) +
+  geom_point(size = 3, colour = "blue") +
+  theme_light() + 
+  labs(title= "Concentración vs Area",
+       x = "Concentración (mg/mL)",
+       y = "UA") +
+  geom_errorbar(aes(ymin=mean.area-sd.area, 
+                    ymax=mean.area+sd.area), 
+                width = 0.003,
+                colour = "red")
+
+# Residual analysis
+plot(mod_sens)
+
+# LOD and LOQ estimation
+summary(mod_sens)
+sigma1 <- sigma(mod_sens)
+S1<- coef(mod_sens)[2]
+
+LOD1 <- (3.3 * sigma1) / S1
+LOQ1 <- (10 * sigma1) / S1
+
+# Eliminación punto 6 (cc = 0.250 mg/mL)
+mod_sens2 <- lm(mean.area ~ cc, data = results$sensibilidad[-6, ])
+summary(mod_sens2)
+plot(mod_sens2)
+
+# LOD and LOQ estimation (2)
+sigma2 <- sigma(mod_sens2)
+S2<- coef(mod_sens2)[2]
+
+LOD2 <- (3.3 * sigma2) / S2
+LOQ2 <- (10 * sigma2) / S2
+
+# Eliminación puntos 6, 7, 8
+mod_sens3 <- lm(mean.area ~ cc, data = results$sensibilidad[-c(6,7,8), ])
+summary(mod_sens3)
+plot(mod_sens3)
+
+# LOD and LOQ estimation (3)
+sigma3 <- sigma(mod_sens3)
+S3<- coef(mod_sens3)[2]
+
+LOD3 <- (3.3 * sigma3) / S3
+LOQ3 <- (10 * sigma3) / S3

@@ -1,0 +1,25 @@
+---
+title: "Calibration & Sensivity Analysis for HPLC"
+author: "Cristina Juárez Alía"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+## Datasets
+
+## Calibration Curve
+
+### Mean and SD
+
+### Area vs Concentration
+
+### Residual Analysis
+
+## Sensivity Analysis
+
+### Mean and SD
+
+### Area vs Concentration
+
+### Residual Analysis
+
+### LOD & LOQ Estimation
