@@ -74,3 +74,14 @@ p_resid.vs.fitted <- ggplot(data = NULL, aes(x = mod$fitted.values,
                            x = "Valores ajustados",
                            y = "Residuos")
 
+# All plots residuals analysis
+plot(mod)
+
+## 4.e. Mandel's Test (Linearity test)
+### Cuadratic model (non linear model)
+mod2 <- lm(mean.area ~ cc + I(cc^2), data = results$linealidad)
+summary(mod2)
+### ANOVA linear model vs cuadratic model
+anova(mod,mod2) # pval> 0.05 so mod2 is not better fit
+
+
